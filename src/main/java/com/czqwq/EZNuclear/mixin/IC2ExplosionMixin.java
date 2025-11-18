@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 
-@Mixin(targets = "ic2.core.ExplosionIC2", remap = false)
+@Mixin(value = ic2.core.ExplosionIC2.class, remap = false)
 public class IC2ExplosionMixin {
 
     @Unique
