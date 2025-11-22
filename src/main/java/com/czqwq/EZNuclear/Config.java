@@ -11,8 +11,11 @@ public class Config {
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
-        IC2Explosion = configuration
-            .getBoolean("IC2Explosion", Configuration.CATEGORY_GENERAL, IC2Explosion, "Allow IC2 nuclear explosions\nAttention: IC2 NuclearReactor Will Remove after after prevent explosion");
+        IC2Explosion = configuration.getBoolean(
+            "IC2Explosion",
+            Configuration.CATEGORY_GENERAL,
+            IC2Explosion,
+            "Allow IC2 nuclear explosions\nAttention: IC2 NuclearReactor Will Remove after after prevent explosion");
         DEExplosion = configuration.getBoolean(
             "DEExplosion",
             Configuration.CATEGORY_GENERAL,

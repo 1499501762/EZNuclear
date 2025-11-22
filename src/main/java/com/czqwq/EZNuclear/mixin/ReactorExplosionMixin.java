@@ -2,7 +2,6 @@ package com.czqwq.EZNuclear.mixin;
 
 import java.lang.reflect.Field;
 
-import com.brandon3055.draconicevolution.common.tileentities.multiblocktiles.reactor.ReactorExplosion;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 
@@ -14,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.brandon3055.brandonscore.common.handlers.ProcessHandler;
+import com.brandon3055.draconicevolution.common.tileentities.multiblocktiles.reactor.ReactorExplosion;
 import com.czqwq.EZNuclear.Config;
 import com.czqwq.EZNuclear.data.PendingMeltdown;
 

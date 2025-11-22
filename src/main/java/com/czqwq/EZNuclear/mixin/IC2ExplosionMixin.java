@@ -42,7 +42,7 @@ public class IC2ExplosionMixin {
             ci.cancel();
             return;
         }
-        
+
         // If this is the deferred invocation, allow it to proceed once
         if (eznuclear_ignoreNext) {
             eznuclear_ignoreNext = false;
