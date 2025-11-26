@@ -1,3 +1,4 @@
+改为发送'坏了坏了'才会触发爆炸
 为GTNH设计的"核电轻而易举模组"
 
 高版本1.20.1版本here: https://github.com/MCTeamPotato/EzUnclear/
