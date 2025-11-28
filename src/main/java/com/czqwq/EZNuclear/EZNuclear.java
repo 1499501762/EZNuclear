@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.czqwq.EZNuclear.data.PendingMeltdown;
+import com.czqwq.EZNuclear.listener.ChatTriggerListener;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -37,6 +38,7 @@ public class EZNuclear {
         // register PendingMeltdown to listen for chat and server tick events
         try {
             PendingMeltdown handler = new PendingMeltdown();
+            MinecraftForge.EVENT_BUS.register(new ChatTriggerListener());
             MinecraftForge.EVENT_BUS.register(handler);
             FMLCommonHandler.instance()
                 .bus()

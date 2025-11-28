@@ -16,6 +16,7 @@
 		"requiredMods": [],
 		"dependencies": [],
 		"dependants": [],
-		"useDependencyInformation": false
+		"useDependencyInformation": false,
+		"serverSideOnly": true
 	}]
 }

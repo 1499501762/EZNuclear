@@ -6,12 +6,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
-import net.minecraftforge.event.ServerChatEvent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,24 +18,29 @@ import com.brandon3055.brandonscore.common.handlers.ProcessHandler;
 import com.brandon3055.draconicevolution.common.tileentities.multiblocktiles.reactor.ReactorExplosion;
 import com.czqwq.EZNuclear.Config;
 import com.czqwq.EZNuclear.data.PendingMeltdown;
+import com.czqwq.EZNuclear.listener.ChatTriggerListener;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
-@Mixin(ReactorExplosion.class)
+/**
+ * Mixin for intercepting Draconic Evolution's ReactorExplosion logic,
+ * enabling delayed and chat-triggered detonation.
+ */
+@Mixin(value = ReactorExplosion.class, remap = false)
 public abstract class ReactorExplosionMixin {
 
     private static final Logger LOGGER = LogManager.getLogger("EZNuclear.ReactorExplosionMixin");
 
-    @Unique
-    private static volatile boolean eznuclear_triggerExplosion = false;
-
     static {
+        // Register chat trigger listener
         FMLCommonHandler.instance()
             .bus()
             .register(new ChatTriggerListener());
     }
 
+    /**
+     * Intercepts run/onRun method to implement explosion control logic.
+     */
     @Inject(method = { "run", "onRun" }, at = @At("HEAD"), cancellable = true, remap = false)
     private void onRun(CallbackInfo ci) {
         // Check if DE explosions are disabled in config
@@ -46,31 +49,31 @@ public abstract class ReactorExplosionMixin {
             return;
         }
 
-        // 聊天触发模式
+        // Chat-triggered explosion mode
         if (Config.RequireChatTrigger) {
             ci.cancel();
             MinecraftServer server = FMLCommonHandler.instance()
                 .getMinecraftServerInstance();
 
-            // 延迟 5 秒后检查是否触发
+            // Schedule a 5-second delay to check for chat trigger
             PendingMeltdown.schedule(new ChunkCoordinates(0, 0, 0), () -> {
-                if (eznuclear_triggerExplosion) {
+                if (ChatTriggerListener.eznuclear_triggerExplosion) {
                     LOGGER.info("ReactorExplosionMixin: chat trigger accepted, allowing explosion");
                 } else {
                     if (server != null) {
                         server.getConfigurationManager()
-                            .sendChatMsg(new ChatComponentTranslation("§a爆炸已被取消！"));
+                            .sendChatMsg(new ChatComponentTranslation("§aExplosion cancelled!"));
                     }
                 }
-                eznuclear_triggerExplosion = false;
+                ChatTriggerListener.eznuclear_triggerExplosion = false;
             }, 5L);
 
             return;
         }
 
-        // ===== 原作者逻辑 =====
+        // ===== Original logic =====
         try {
-            // 原始 PendingMeltdown 调度逻辑
+            // Reflectively access explosion position and world
             Class<?> cls = this.getClass();
             Field xField = cls.getDeclaredField("x");
             Field yField = cls.getDeclaredField("y");
@@ -86,15 +89,17 @@ public abstract class ReactorExplosionMixin {
             World world = (World) worldField.get(this);
 
             ChunkCoordinates pos = new ChunkCoordinates(x, y, z);
-            // If PendingMeltdown already scheduled reentry, allow run to proceed
+
+            // If PendingMeltdown already marked reentry, allow original run
             if (PendingMeltdown.consumeReentry(pos)) {
                 LOGGER.info("ReactorExplosionMixin: reentry present for {}. allowing run", pos);
-                return; // allow original run
+                return;
             }
 
+            // Otherwise, cancel original run and schedule delayed explosion
             ci.cancel();
             float power = 10F;
-            // 省略原作者 power 字段读取逻辑...
+            // TODO: Optionally read actual power value via reflection
             final float fpower = power;
 
             PendingMeltdown.schedule(pos, () -> {
@@ -109,18 +114,6 @@ public abstract class ReactorExplosionMixin {
 
         } catch (Throwable t) {
             LOGGER.warn("ReactorExplosionMixin interception failed: {}", t.getMessage());
-        }
-    }
-
-    // 聊天监听器
-    public static class ChatTriggerListener {
-
-        @SubscribeEvent
-        public void onPlayerChat(ServerChatEvent event) {
-            if ("坏了坏了".equals(event.message.trim())) {
-                eznuclear_triggerExplosion = true;
-                event.player.addChatMessage(new ChatComponentTranslation("§c爆炸已被触发！"));
-            }
         }
     }
 }

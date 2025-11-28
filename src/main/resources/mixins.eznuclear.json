@@ -7,10 +7,11 @@
   "mixins": [
     "ProcessHandlerMixin",
     "TileReactorCoreMixin",
-    "IC2ExplosionMixin"
+    "IC2ExplosionMixin",
+    "WorldServerTickMixin"
   ],
   "client": [],
-  "server": ["TileReactorCoreMixin","IC2ExplosionMixin"],
+  "server": ["TileReactorCoreMixin","IC2ExplosionMixin","WorldServerTickMixin"],
   "injectors": {
     "defaultRequire": 1
   }
