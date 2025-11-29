@@ -15,7 +15,12 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = EZNuclear.MODID, version = Tags.VERSION, name = "EZNulcear", acceptedMinecraftVersions = "[1.7.10]", acceptableRemoteVersions = "*")
+@Mod(
+    modid = EZNuclear.MODID,
+    version = Tags.VERSION,
+    name = "EZNulcear",
+    acceptedMinecraftVersions = "[1.7.10]",
+    acceptableRemoteVersions = "*")
 public class EZNuclear {
 
     public static final String MODID = "EZNuclear";
