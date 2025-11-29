@@ -1,5 +1,20 @@
-# EZNuclear translations
-info.ezunclear=核电，轻而易举啊！
-info.ezunclear.interact=坏了坏了
-info.ezunclear.preventexplosion=[EZNuclear]成功拦截了一个爆炸
+# EZNuclear 中文语言文件
 
+info.ezunclear.preventexplosion=§a[EZNuclear]爆炸已被成功拦截！
+
+info.ezunclear.power=§c现在的发电量是10A
+info.ezunclear=§c核电，轻而易举啊！
+info.ezunclear.triggered=§c爆炸已被触发！
+info.ezunclear.cancelled=§a爆炸已被取消！
+info.ezunclear.failed=§4爆炸触发失败：
+info.ezunclear.interact=坏了坏了
+
+info.ezunclear.countdown=§6检测到反应堆异常，正在启动爆炸倒计时…
+
+info.ezunclear.chattrigger.required=§e请输入聊天指令以确认是否引爆
+info.ezunclear.chattrigger.received=§b已收到聊天触发，准备引爆
+info.ezunclear.chattrigger.timeout=§a未检测到聊天触发，爆炸已取消
+
+info.ezunclear.config.disabled=§a爆炸已被取消！（已在配置中禁用）
+info.ezunclear.reentry.allowed=§7已允许再次进入爆炸流程
+info.ezunclear.reentry.marked=§7已标记为可再次爆炸

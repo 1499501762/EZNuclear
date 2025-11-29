@@ -8,7 +8,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,14 +17,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.czqwq.EZNuclear.Config;
+import com.czqwq.EZNuclear.TaskBus;
 import com.czqwq.EZNuclear.listener.ChatTriggerListener;
+import com.czqwq.EZNuclear.util.ChatHelper;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 
 @Mixin(value = ic2.core.ExplosionIC2.class, remap = false)
 public class IC2ExplosionMixin {
 
-    // 只保留 ExplosionIC2 自身字段的 Shadow 声明
     @Shadow
     private net.minecraft.world.World worldObj;
     @Shadow
@@ -60,6 +60,8 @@ public class IC2ExplosionMixin {
     private volatile boolean eznuclear_ignoreNext = false;
     @Unique
     private volatile boolean eznuclear_pendingCountdown = false;
+    @Unique
+    private volatile long eznuclear_countdownStartedAtMillis = 0L;
 
     // 缓存爆炸参数
     @Unique
@@ -90,46 +92,42 @@ public class IC2ExplosionMixin {
         if (Config.RequireChatTrigger) {
             ci.cancel();
 
-            final MinecraftServer server = FMLCommonHandler.instance()
-                .getMinecraftServerInstance();
-
             if (!eznuclear_pendingCountdown) {
                 eznuclear_pendingCountdown = true;
+                eznuclear_countdownStartedAtMillis = System.currentTimeMillis();
 
                 cacheExplosionFieldsIfNeeded();
 
-                if (server != null) {
-                    server.getConfigurationManager()
-                        .sendChatMsg(new ChatComponentTranslation("§c现在的发电量是10A"));
-                    server.getConfigurationManager()
-                        .sendChatMsg(new ChatComponentTranslation("§c核电,轻而易举啊"));
-                }
+                ChatHelper.broadcast("info.ezunclear.power");
+                ChatHelper.broadcast("info.ezunclear");
+
+                long delayMs = Math.max(0, Config.ExplosionDelayMs);
 
                 SCHEDULER.schedule(() -> {
                     runOnServerThread(() -> {
                         try {
-                            if (ChatTriggerListener.eznuclear_triggerExplosion) {
+                            long windowStart = eznuclear_countdownStartedAtMillis;
+                            long windowEnd = windowStart + delayMs;
+
+                            boolean ok = ChatTriggerListener.consumeTriggerInWindow(windowStart, windowEnd);
+
+                            if (ok) {
                                 try {
                                     triggerNewExplosionFromCache();
-                                    if (server != null) {
-                                        server.getConfigurationManager()
-                                            .sendChatMsg(new ChatComponentTranslation("§c爆炸已被触发！"));
-                                    }
+                                    ChatHelper.broadcast("info.ezunclear.triggered");
                                 } catch (Throwable t) {
                                     t.printStackTrace();
+                                    ChatHelper.broadcast("info.ezunclear.failed: " + t.getMessage());
                                 }
                             } else {
-                                if (server != null) {
-                                    server.getConfigurationManager()
-                                        .sendChatMsg(new ChatComponentTranslation("§a爆炸已被取消！"));
-                                }
+                                ChatHelper.broadcast("info.ezunclear.cancelled");
                             }
                         } finally {
                             eznuclear_pendingCountdown = false;
-                            ChatTriggerListener.eznuclear_triggerExplosion = false;
+                            eznuclear_countdownStartedAtMillis = 0L;
                         }
                     });
-                }, 5L, TimeUnit.SECONDS);
+                }, delayMs, TimeUnit.MILLISECONDS);
             }
 
             return;
@@ -142,40 +140,31 @@ public class IC2ExplosionMixin {
 
         MinecraftServer server = FMLCommonHandler.instance()
             .getMinecraftServerInstance();
-        if (server == null) return;
-
-        try {
-            server.getConfigurationManager()
-                .sendChatMsg(new ChatComponentTranslation("info.ezunclear"));
-        } catch (Throwable t) {
-            t.printStackTrace();
+        if (server == null) {
+            ci.cancel();
+            return;
         }
 
+        ChatHelper.broadcast("info.ezunclear");
         ci.cancel();
+
+        long delayMs = Math.max(0, Config.ExplosionDelayMs);
 
         SCHEDULER.schedule(() -> {
             runOnServerThread(() -> {
-                MinecraftServer s = FMLCommonHandler.instance()
-                    .getMinecraftServerInstance();
-                if (s != null) {
-                    try {
-                        s.getConfigurationManager()
-                            .sendChatMsg(new ChatComponentTranslation("info.ezunclear.interact"));
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                    }
+                ChatHelper.broadcast("info.ezunclear.interact");
 
-                    eznuclear_ignoreNext = true;
+                eznuclear_ignoreNext = true;
 
-                    try {
-                        cacheExplosionFieldsIfNeeded();
-                        triggerNewExplosionFromCache();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                    }
+                try {
+                    cacheExplosionFieldsIfNeeded();
+                    triggerNewExplosionFromCache();
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    ChatHelper.broadcast("info.ezunclear.failed: " + t.getMessage());
                 }
             });
-        }, 5L, TimeUnit.SECONDS);
+        }, delayMs, TimeUnit.MILLISECONDS);
     }
 
     @Unique
@@ -260,10 +249,6 @@ public class IC2ExplosionMixin {
 
     @Unique
     private void runOnServerThread(Runnable task) {
-        final net.minecraft.world.World boundWorld = this.worldObj;
-        com.czqwq.EZNuclear.TaskBus.postToWorldTick(() -> {
-            // 如果需要，可以在这里检查 MinecraftServer/WorldServer 状态
-            task.run();
-        });
+        TaskBus.postToWorldTick(task);
     }
 }

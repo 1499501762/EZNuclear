@@ -5,7 +5,6 @@
   "refmap": "mixins.eznuclear.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ProcessHandlerMixin",
     "TileReactorCoreMixin",
     "IC2ExplosionMixin",
     "WorldServerTickMixin"

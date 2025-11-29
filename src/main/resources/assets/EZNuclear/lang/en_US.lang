@@ -1,5 +1,20 @@
-# EZNuclear translations
-info.ezunclear=核电，轻而易举啊！
-info.ezunclear.interact=坏了坏了
-info.ezunclear.preventexplosion=[EZNuclear]Successfully intercepted an explosion
+# EZNuclear English Language File
 
+info.ezunclear.power=§cCurrent output is 10A
+info.ezunclear=§cNuclear power, easy as pie!
+info.ezunclear.triggered=§cExplosion has been triggered!
+info.ezunclear.cancelled=§aExplosion has been cancelled!
+info.ezunclear.failed=§4Explosion trigger failed:
+info.ezunclear.interact=§cOh no, it's going bad!
+
+info.ezunclear.preventexplosion=§a[EZNuclear]Successfully intercepted an explosion
+
+info.ezunclear.countdown=§6Reactor anomaly detected, initiating countdown…
+
+info.ezunclear.chattrigger.required=§ePlease enter the chat command to confirm detonation
+info.ezunclear.chattrigger.received=§bChat trigger received, preparing to detonate
+info.ezunclear.chattrigger.timeout=§aNo chat trigger detected, explosion cancelled
+
+info.ezunclear.config.disabled=§aExplosion cancelled (disabled in config)
+info.ezunclear.reentry.allowed=§7Reentry allowed for explosion
+info.ezunclear.reentry.marked=§7Marked for reentry

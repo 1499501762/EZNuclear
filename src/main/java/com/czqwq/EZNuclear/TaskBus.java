@@ -23,4 +23,8 @@ public final class TaskBus {
             }
         }
     }
+
+    public static int getPendingTaskCount() {
+        return WORLD_TICK_TASKS.size();
+    }
 }

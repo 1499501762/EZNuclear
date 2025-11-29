@@ -8,12 +8,24 @@ public class Config {
 
     public static boolean IC2Explosion = true;
     public static boolean DEExplosion = true;
+    public static boolean RequireChatTrigger = true;
 
-    // 新增开关：是否要求玩家输入关键字才能触发爆炸
-    public static boolean RequireChatTrigger = false;
+    // 新增：爆炸延迟时间（毫秒）
+    public static int ExplosionDelayMs = 5000;
 
-    public static void synchronizeConfiguration(File configFile) {
-        Configuration configuration = new Configuration(configFile);
+    private static Configuration configuration;
+    private static File configFile;
+
+    public static void load() {
+        if (configFile == null) {
+            configFile = new File("config/eznuclear.cfg");
+        }
+        synchronizeConfiguration(configFile);
+    }
+
+    public static void synchronizeConfiguration(File file) {
+        configFile = file;
+        configuration = new Configuration(file);
 
         IC2Explosion = configuration.getBoolean(
             "IC2Explosion",
@@ -31,7 +43,15 @@ public class Config {
             "RequireChatTrigger",
             Configuration.CATEGORY_GENERAL,
             RequireChatTrigger,
-            "Require players to type '坏了坏了' within 5 seconds to trigger IC2 nuclear explosion");
+            "Require players to type '坏了坏了' within delay time to trigger nuclear explosion");
+
+        ExplosionDelayMs = configuration.getInt(
+            "ExplosionDelayMs",
+            Configuration.CATEGORY_GENERAL,
+            ExplosionDelayMs,
+            0,
+            60000,
+            "Delay before explosion is triggered (in milliseconds)");
 
         if (configuration.hasChanged()) {
             configuration.save();
